@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>EarnPay — Money moves. Life keeps flowing.</title>
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & RESET (100% Standalone, Zero External Dependencies)
+       ========================================================================== */
+    :root {
+      --bg-cream: #FAF7F2;
+      --bg-cream-soft: #F5EFE6;
+      --bg-white: #FFFFFF;
+      --text-espresso: #23170F;
+      --text-brown: #57463A;
+      --text-muted: #78685B;
+      --text-subtle: #857367;
+      --border-warm: #EBE2D5;
+      --border-input: #E2D7C8;
+      --brand-purple: #5B21B6;
+      --brand-orange: #9E470E;
+      --brand-orange-hover: #863B0B;
+      --brand-orange-text: #C2410C;
+      --amber-bg: #FEF3C7;
+      --amber-border: rgba(245, 158, 11, 0.45);
+      --amber-text: #92400E;
+      --green-bg: #DCFCE7;
+      --green-text: #15803D;
+      --red-badge: #B91C1C;
+      --shadow-soft: 0 2px 12px rgba(35, 23, 15, 0.04);
+      --shadow-card: 0 4px 20px rgba(35, 23, 15, 0.05);
+      --shadow-modal: 0 20px 50px rgba(35, 23, 15, 0.22);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 9999px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--bg-cream);
+      color: var(--text-espresso);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.45;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ==========================================================================
+       2. LAYOUT CONTAINER & SEASONAL PARTICLES
+       ========================================================================== */
+    .app-shell {
+      width: 100%;
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 12px 16px 36px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+    }
+
+    #leaves-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 40;
+      overflow: hidden;
+    }
+
+    .season-particle {
+      position: absolute;
+      top: -36px;
+      user-select: none;
+      opacity: 0;
+      animation: driftDown linear infinite;
+    }
+
+    @keyframes driftDown {
+      0% {
+        transform: translateY(-5vh) translateX(0px) rotate(0deg);
+        opacity: 0;
+      }
+      12% {
+        opacity: 0.78;
+      }
+      50% {
+        transform: translateY(48vh) translateX(22px) rotate(150deg);
+      }
+      88% {
+        opacity: 0.78;
+      }
+      100% {
+        transform: translateY(105vh) translateX(-16px) rotate(330deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes spin360 {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-once {
+      animation: spin360 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ==========================================================================
+       3. AUTHENTICATION SCREEN (SIGN IN & CREATE ACCOUNT)
+       ========================================================================== */
+    .auth-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    .auth-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-square {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--brand-purple);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(91, 33, 182, 0.22);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-espresso);
+    }
+
+    .brand-switch-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      color: var(--text-brown);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .auth-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-xl);
+      padding: 24px 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-cream);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-warm);
+      margin-bottom: 20px;
+    }
+
+    .auth-tab {
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.18s ease;
+    }
+
+    .auth-tab.active {
+      background: var(--bg-white);
+      color: var(--text-espresso);
+      box-shadow: 0 2px 8px rgba(35, 23, 15, 0.06);
+    }
+
+    .auth-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .auth-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-cream);
+      border: 1px solid var(--border-input);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-espresso);
+      outline: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--brand-orange);
+      background: var(--bg-white);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      background: var(--brand-orange);
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(158, 71, 14, 0.25);
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-orange-hover);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.985);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-cream);
+      border: 1px solid var(--border-warm);
+      color: var(--text-espresso);
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 10px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-cream-soft);
+    }
+
+    /* ==========================================================================
+       4. TOP HEADER BAR & QUICK-NAV PILL STRIP
+       ========================================================================== */
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      background: rgba(250, 247, 242, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      margin: 0 -16px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(235, 226, 213, 0.6);
+    }
+
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-soft);
+      color: var(--text-espresso);
+      transition: transform 0.12s ease;
+    }
+
+    .icon-btn-box:active {
+      transform: scale(0.94);
+    }
+
+    .notif-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: 3px;
+      right: 2px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: var(--radius-pill);
+      background: var(--red-badge);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      box-shadow: 0 2px 5px rgba(185, 28, 28, 0.35);
+    }
+
+    .signout-pill {
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-espresso);
+      box-shadow: var(--shadow-soft);
+      transition: background 0.15s ease, transform 0.12s ease;
+    }
+
+    .signout-pill:active {
+      transform: scale(0.96);
+    }
+
+    .pill-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px 2px;
+      scrollbar-width: none;
+    }
+    .pill-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-pill {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(235, 226, 213, 0.9);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-brown);
+      transition: background 0.15s ease, transform 0.12s ease;
+    }
+
+    .nav-pill:hover {
+      background: var(--bg-white);
+      color: var(--text-espresso);
+    }
+
+    .nav-pill:active {
+      transform: scale(0.95);
+    }
+
+    /* ==========================================================================
+       5. BANNERS, HERO, PROMOS & BALANCE CARD
+       ========================================================================== */
+    .verify-banner {
+      position: relative;
+      background: rgba(254, 243, 199, 0.92);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--radius-lg);
+      padding: 15px 36px 15px 16px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .verify-banner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-espresso);
+      margin-bottom: 4px;
+    }
+
+    .verify-banner-text {
+      font-size: 14px;
+      color: #6B5849;
+      line-height: 1.45;
+    }
+
+    .inline-link {
+      color: #B45309;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .dismiss-x {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #8C7B6D;
+    }
+
+    .dismiss-x:hover {
+      background: rgba(35, 23, 15, 0.06);
+      color: var(--text-espresso);
+    }
+
+    .hero-section {
+      margin-bottom: 20px;
+    }
+
+    .hero-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand-orange-text);
+      margin-bottom: 4px;
+    }
+
+    .hero-heading {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.18;
+      color: var(--text-espresso);
+      margin-bottom: 6px;
+    }
+
+    .hero-sub {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .paytag-copy-btn {
+      font-weight: 700;
+      color: var(--text-espresso);
+      border-bottom: 1.5px dashed #C7B9A8;
+      padding-bottom: 1px;
+      transition: color 0.15s ease;
+    }
+
+    .paytag-copy-btn:hover {
+      color: var(--brand-orange);
+    }
+
+    .promo-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .promo-card {
+      position: relative;
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-lg);
+      padding: 15px 38px 15px 15px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .promo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: var(--bg-cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .promo-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-espresso);
+      margin-bottom: 2px;
+    }
+
+    .promo-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.38;
+    }
+
+    /* Balance Card */
+    .balance-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .balance-glow {
+      position: absolute;
+      right: -35px;
+      bottom: -45px;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253, 230, 138, 0.42) 0%, rgba(254, 215, 170, 0.16) 55%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .balance-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .balance-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .balance-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .round-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-brown);
+      transition: background 0.15s ease, transform 0.12s ease;
+    }
+
+    .round-icon-btn.bordered {
+      border: 1px solid var(--border-warm);
+      background: var(--bg-white);
+    }
+
+    .round-icon-btn:hover {
+      background: var(--bg-cream);
+    }
+
+    .balance-figure {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-espresso);
+      line-height: 1.15;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+      position: relative;
+      z-index: 2;
+    }
+
+    .status-pill.unverified {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    .status-pill.verified {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    /* ==========================================================================
+       6. QUICK ACTIONS 2x3 GRID & RECENT TRANSACTIONS
+       ========================================================================== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: var(--text-espresso);
+    }
+
+    .actions-outer-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .action-tile {
+      height: 92px;
+      border-radius: var(--radius-lg);
+      background: rgba(250, 247, 242, 0.65);
+      border: 1px solid var(--border-warm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-espresso);
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+
+    .action-tile:hover {
+      background: var(--bg-cream);
+    }
+
+    .action-tile:active {
+      transform: scale(0.97);
+    }
+
+    .action-tile.primary-send {
+      background: var(--brand-orange);
+      border-color: var(--brand-orange);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(158, 71, 14, 0.22);
+    }
+
+    .action-tile.primary-send:hover {
+      background: var(--brand-orange-hover);
+    }
+
+    /* Transactions List */
+    .tx-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .tx-row {
+      width: 100%;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      border-bottom: 1px solid #F3EDE4;
+      transition: background 0.15s ease;
+    }
+
+    .tx-row:last-child {
+      border-bottom: none;
+    }
+
+    .tx-row:hover {
+      background: rgba(250, 247, 242, 0.75);
+    }
+
+    .tx-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .tx-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-espresso);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tx-date {
+      font-size: 13px;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
+
+    .tx-amount {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-espresso);
+      flex-shrink: 0;
+    }
+
+    .tx-amount.positive {
+      color: var(--green-text);
+    }
+
+    .tx-status-pill {
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .tx-status-pill.completed {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .tx-status-pill.pending {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    /* ==========================================================================
+       7. FOOTER
+       ========================================================================== */
+    .app-footer {
+      border-top: 1px solid #E6DDD0;
+      padding-top: 24px;
+      margin-top: auto;
+    }
+
+    .footer-brand {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-espresso);
+      margin-bottom: 4px;
+    }
+
+    .footer-tagline {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links button, .footer-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-espresso);
+      text-align: left;
+    }
+
+    .footer-links button:hover, .footer-links a:hover {
+      color: var(--brand-orange);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border-warm);
+      padding-top: 16px;
+      font-size: 13px;
+      color: var(--text-subtle);
+    }
+
+    /* ==========================================================================
+       8. SLIDE-OUT DRAWER, MODALS & TOAST
+       ========================================================================== */
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(35, 23, 15, 0.45);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 50;
+    }
+
+    .side-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 285px;
+      max-width: 82vw;
+      background: var(--bg-cream);
+      border-right: 1px solid var(--border-warm);
+      z-index: 60;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transform: translateX(-100%);
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 12px 0 40px rgba(35, 23, 15, 0.16);
+    }
+
+    .side-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 14px;
+    }
+
+    .drawer-item {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-espresso);
+      text-align: left;
+    }
+
+    .drawer-item:hover {
+      background: var(--bg-white);
+    }
+
+    .drawer-item.active {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      color: var(--brand-orange);
+    }
+
+    .modal-wrap {
+      position: fixed;
+      inset: 0;
+      background: rgba(35, 23, 15, 0.48);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 70;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    @media (min-width: 520px) {
+      .modal-wrap {
+        align-items: center;
+        padding: 16px;
+      }
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: 26px 26px 0 0;
+      padding: 22px 20px 28px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-modal);
+      animation: slideUpModal 0.2s ease-out;
+    }
+
+    @media (min-width: 520px) {
+      .modal-box {
+        border-radius: 26px;
+        padding: 24px;
+      }
+    }
+
+    @keyframes slideUpModal {
+      from { transform: translateY(22px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #F3EDE4;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-espresso);
+    }
+
+    .toast-banner {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 90;
+      background: var(--text-espresso);
+      color: #FFFFFF;
+      padding: 11px 18px;
+      border-radius: var(--radius-lg);
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 28px rgba(35, 23, 15, 0.28);
+      max-width: 90vw;
+      white-space: nowrap;
+    }
+
+    /* Admin Panel Highlight Card */
+    .admin-box {
+      background: var(--bg-cream);
+      border: 1px solid var(--border-warm);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .admin-box-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-orange);
+      margin-bottom: 10px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Decorative Autumn Leaves & Pumpkins Overlay (Toggleable) -->
+  <div id="leaves-layer" aria-hidden="true"></div>
+
+  <!-- Toast Feedback Banner -->
+  <div id="toast" class="toast-banner hidden" role="status">
+    <span id="toast-icon" style="color:#34D399;">✓</span>
+    <span id="toast-msg">Done</span>
+  </div>
+
+  <!-- ========================================================================
+       VIEW 1: AUTHENTICATION (SIGN IN & CREATE ACCOUNT)
+       ======================================================================== -->
+  <main id="auth-view" class="app-shell hidden">
+    <div class="auth-wrapper">
+      <div class="auth-header">
+        <div class="brand-lockup" onclick="handleLogoSecretTap()" style="cursor:pointer;">
+          <div class="brand-square brand-letter">E</div>
+          <span class="brand-name brand-label">EarnPay</span>
+        </div>
+        <button type="button" class="brand-switch-pill" onclick="toggleBrandName()">
+          Switch to <span id="auth-alt-brand">PayFlow</span>
+        </button>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button type="button" id="tab-signin" class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+          <button type="button" id="tab-signup" class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="signin-form" onsubmit="handleSignIn(event)">
+          <h1 class="auth-title">Welcome back</h1>
+          <p class="auth-sub">Sign in with your @PayTag or email to access your wallet.</p>
+
+          <div class="form-group">
+            <label class="form-label" for="login-identifier">@PayTag or Email</label>
+            <input id="login-identifier" class="form-input" type="text" required value="@crypto" placeholder="@crypto or you@email.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input id="login-password" class="form-input" type="password" required value="••••••••" placeholder="Enter your password" />
+          </div>
+
+          <button type="submit" class="btn-primary">Sign In to Wallet</button>
+          <button type="button" class="btn-secondary" onclick="quickDemoSignIn()">Quick Demo Sign In (@crypto)</button>
+        </form>
+
+        <!-- Create Account Form -->
+        <form id="signup-form" class="hidden" onsubmit="handleSignUp(event)">
+          <h1 class="auth-title">Create your account</h1>
+          <p class="auth-sub">Claim your unique @PayTag — get paid without account numbers.</p>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-name">Full Name / Display Name</label>
+            <input id="reg-name" class="form-input" type="text" required placeholder="e.g. Crypto giveaway" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-email">Email Address</label>
+            <input id="reg-email" class="form-input" type="email" required placeholder="you@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-paytag">Custom @PayTag</label>
+            <input id="reg-paytag" class="form-input" type="text" required placeholder="@yourtag" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password</label>
+            <input id="reg-password" class="form-input" type="password" required placeholder="Create a strong password" />
+          </div>
+
+          <button type="submit" class="btn-primary">Create Account & Continue</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       VIEW 2: MAIN FINTECH DASHBOARD
+       ======================================================================== -->
+  <div id="dashboard-view" class="app-shell">
+
+    <!-- 1. Top Header Bar -->
+    <header class="top-header">
+      <div class="header-left">
+        <button type="button" class="icon-btn-box" aria-label="Open menu" onclick="openDrawer()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </button>
+
+        <div class="brand-lockup" onclick="handleLogoSecretTap()" style="cursor:pointer;" title="Tap 3x for Admin">
+          <div class="brand-square brand-letter">E</div>
+          <span class="brand-name brand-label">EarnPay</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button type="button" class="notif-btn" aria-label="Notifications" onclick="openNotificationsModal()">
+          <svg width="21" height="21" fill="#C7BFB4" viewBox="0 0 24 24">
+            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
+          </svg>
+          <span id="header-notif-badge" class="notif-badge">8</span>
+        </button>
+
+        <button type="button" class="signout-pill" onclick="handleSignOut()">Sign out</button>
+      </div>
+    </header>
+
+    <!-- 2. Horizontal Quick-Action Pill Strip -->
+    <nav class="pill-strip" aria-label="Quick navigation">
+      <button type="button" class="nav-pill" onclick="openActionModal('add')">Add money</button>
+      <button type="button" class="nav-pill" onclick="openActionModal('requests')">Requests</button>
+      <button type="button" class="nav-pill" onclick="openActionModal('receive')">Receive</button>
+      <button type="button" class="nav-pill" onclick="openActionModal('withdraw')">Withdraw</button>
+    </nav>
+
+    <!-- 3. Account Not Verified Amber Alert Box -->
+    <section id="verify-alert-box" class="verify-banner">
+      <button type="button" class="dismiss-x" aria-label="Dismiss alert" onclick="dismissElement('verify-alert-box')">✕</button>
+      <div class="verify-banner-title">Account Not Verified</div>
+      <p class="verify-banner-text">
+        Your account must be verified by an admin before it is fully activated. Please
+        <button type="button" class="inline-link" onclick="openSupportModal()">contact support</button>.
+      </p>
+    </section>
+
+    <!-- 4. Welcome & PayTag Hero Section -->
+    <section class="hero-section">
+      <div class="hero-kicker">WELCOME BACK</div>
+      <h1 id="dash-display-name" class="hero-heading">Crypto giveaway</h1>
+      <p class="hero-sub">
+        Your PayTag is
+        <button type="button" class="paytag-copy-btn" onclick="copyPayTag()" title="Tap to copy PayTag">
+          <span id="dash-paytag">@crypto</span>
+        </button>
+        — share it to get paid without account numbers.
+      </p>
+    </section>
+
+    <!-- 5. Dismissible Promo Cards -->
+    <section class="promo-stack">
+      <div id="promo-card-1" class="promo-card">
+        <div class="promo-icon">🦃</div>
+        <div>
+          <div class="promo-title">Happy Thanksgiving!</div>
+          <div class="promo-desc">Grateful for you — enjoy the feast.</div>
+        </div>
+        <button type="button" class="dismiss-x" aria-label="Dismiss card" onclick="dismissElement('promo-card-1')">✕</button>
+      </div>
+
+      <div id="promo-card-2" class="promo-card">
+        <div class="promo-icon">📲</div>
+        <div>
+          <div class="promo-title">Get the <span class="brand-label">EarnPay</span> app</div>
+          <div class="promo-desc">
+            Tap the Share button, then "Add to Home Screen" — <span class="brand-label">EarnPay</span> opens full-screen like a real app.
+          </div>
+        </div>
+        <button type="button" class="dismiss-x" aria-label="Dismiss card" onclick="dismissElement('promo-card-2')">✕</button>
+      </div>
+    </section>
+
+    <!-- 6. Total Balance Card -->
+    <section class="balance-card">
+      <div class="balance-glow"></div>
+      <div class="balance-top">
+        <span class="balance-label">Total Balance</span>
+        <div class="balance-controls">
+          <button type="button" class="round-icon-btn" aria-label="Show or hide balance" onclick="toggleMaskBalance()">
+            <svg id="eye-show-svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              <circle cx="12" cy="12" r="3" fill="#B45309" stroke="#23170F" stroke-width="1.5"/>
+            </svg>
+            <svg id="eye-hide-svg" class="hidden" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/>
+            </svg>
+          </button>
+
+          <button type="button" class="round-icon-btn bordered" aria-label="Refresh balance" onclick="refreshBalanceSpin()">
+            <svg id="refresh-svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="balance-display" class="balance-figure">$2,135.00</div>
+
+      <div>
+        <span id="balance-verify-pill" class="status-pill unverified">Not Verified</span>
+      </div>
+    </section>
+
+    <!-- 7. Quick Actions 2x3 Grid -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">Quick actions</h2>
+      </div>
+
+      <div class="actions-outer-card">
+        <div class="actions-grid">
+          <!-- Markets -->
+          <button type="button" class="action-tile" onclick="openActionModal('markets')">
+            <svg width="20" height="20" fill="none" stroke="#B45309" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7v9"/>
+            </svg>
+            <span>Markets</span>
+          </button>
+
+          <!-- Send money (Highlighted Burnt-Orange Tile) -->
+          <button type="button" class="action-tile primary-send" onclick="openActionModal('send')">
+            <svg width="20" height="20" fill="none" stroke="#FFFFFF" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
+            </svg>
+            <span>Send money</span>
+          </button>
+
+          <!-- Receive -->
+          <button type="button" class="action-tile" onclick="openActionModal('receive')">
+            <svg width="20" height="20" fill="none" stroke="#B45309" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0l-5-5m5 5l5-5"/>
+            </svg>
+            <span>Receive</span>
+          </button>
+
+          <!-- Withdraw -->
+          <button type="button" class="action-tile" onclick="openActionModal('withdraw')">
+            <svg width="20" height="20" fill="none" stroke="#B45309" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-5 5m5-5l5 5"/>
+            </svg>
+            <span>Withdraw</span>
+          </button>
+
+          <!-- Requests -->
+          <button type="button" class="action-tile" onclick="openActionModal('requests')">
+            <svg width="20" height="20" fill="none" stroke="#B45309" stroke-width="2.1" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 10h13l-3-3m0 10H4l3 3"/>
+            </svg>
+            <span>Requests</span>
+          </button>
+
+          <!-- Scheduled -->
+          <button type="button" class="action-tile" onclick="openActionModal('scheduled')">
+            <svg width="20" height="20" fill="none" stroke="#B45309" stroke-width="2.1" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="8.5"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5v4.5l3 1.8"/>
+            </svg>
+            <span>Scheduled</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Recent Transactions List -->
+    <section id="history-anchor">
+      <div class="section-header">
+        <h2 class="section-title">Recent activity</h2>
+        <button type="button" class="inline-link" style="font-size:13px; text-decoration:none;" onclick="openActionModal('add')">+ Add money</button>
+      </div>
+
+      <div id="tx-list-container" class="tx-card">
+        <!-- Rendered dynamically from state -->
+      </div>
+    </section>
+
+    <!-- 9. Footer -->
+    <footer class="app-footer">
+      <div class="footer-brand brand-label">EarnPay</div>
+      <p class="footer-tagline">Money moves. Life keeps flowing.</p>
+
+      <div class="footer-grid">
+        <div>
+          <h3 class="footer-col-title brand-upper">EARNPAY</h3>
+          <ul class="footer-links">
+            <li><button type="button" onclick="openSupportModal()">Support</button></li>
+            <li><button type="button" onclick="openStaticModal('Privacy Policy', 'Your personal data, @PayTag transfers, and balance records are encrypted and never shared with external advertisers.')">Privacy Policy</button></li>
+            <li><button type="button" onclick="openStaticModal('Terms & Privacy', 'Peer-to-peer @PayTag transfers settle instantly. Accounts awaiting admin review may have temporary withdrawal limits.')">Terms &amp; Privacy</button></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="footer-col-title">ACCOUNT</h3>
+          <ul class="footer-links">
+            <li><a href="#history-anchor">History</a></li>
+            <li><button type="button" onclick="openNotificationsModal()">Notifications</button></li>
+            <li><button type="button" onclick="openSettingsModal()">Settings</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span class="brand-label">EarnPay</span> — send and request money with @PayTags.
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================
+       SLIDE-OUT NAVIGATION DRAWER
+       ======================================================================== -->
+  <div id="drawer-backdrop" class="overlay-backdrop hidden" onclick="closeDrawer()"></div>
+  <aside id="side-drawer" class="side-drawer" aria-label="Main navigation drawer">
+    <div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid var(--border-warm);">
+        <div class="brand-lockup">
+          <div class="brand-square brand-letter" style="width:36px; height:36px; font-size:18px;">E</div>
+          <div>
+            <div class="brand-name brand-label" style="font-size:17px;">EarnPay</div>
+            <div id="drawer-paytag" style="font-size:12px; color:var(--text-muted);">@crypto</div>
+          </div>
+        </div>
+        <button type="button" class="round-icon-btn bordered" onclick="closeDrawer()" aria-label="Close drawer">✕</button>
+      </div>
+
+      <nav class="drawer-nav">
+        <button type="button" class="drawer-item active" onclick="closeDrawer()"><span>🏠 Dashboard</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('markets')"><span>📈 Markets</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('send')"><span>💸 Send money</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('receive')"><span>📥 Receive</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('withdraw')"><span>🏦 Withdraw</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('requests')"><span>🔄 Requests</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openActionModal('scheduled')"><span>🕒 Scheduled</span></button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openNotificationsModal()">
+          <span>🔔 Notifications</span>
+          <span id="drawer-notif-badge" style="background:var(--red-badge); color:#fff; font-size:11px; padding:2px 7px; border-radius:99px;">8</span>
+        </button>
+        <button type="button" class="drawer-item" onclick="closeDrawer(); openSettingsModal()"><span>⚙️ Settings</span></button>
+      </nav>
+    </div>
+
+    <div style="border-top:1px solid var(--border-warm); padding-top:14px; display:flex; flex-direction:column; gap:8px;">
+      <button type="button" class="drawer-item" style="background:var(--bg-white); border:1px solid var(--border-warm);" onclick="closeDrawer(); openAdminPanel()">
+        <span>🛡️ Admin Panel</span>
+        <span style="font-size:11px; color:var(--brand-orange); font-weight:800;">MANAGE</span>
+      </button>
+      <button type="button" class="drawer-item" style="color:#B91C1C;" onclick="closeDrawer(); handleSignOut()">
+        <span>🚪 Sign out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       REUSABLE MODAL CONTAINER
+       ======================================================================== -->
+  <div id="modal-wrap" class="modal-wrap hidden" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title">Title</h3>
+        <button type="button" class="round-icon-btn bordered" onclick="closeModal()" aria-label="Close modal">✕</button>
+      </div>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       APPLICATION LOGIC & PERSISTENT STORAGE
+       ======================================================================== -->
+  <script>
+    const STORAGE_KEY = 'earnpay_fintech_state_v1';
+
+    const DEFAULT_STATE = {
+      isAuthenticated: true, // Starts on dashboard for instant preview; Sign out opens full Auth flow
+      brandName: 'EarnPay',
+      displayName: 'Crypto giveaway',
+      email: 'crypto@earnpay.app',
+      payTag: '@crypto',
+      balance: 2135.00,
+      hideBalance: false,
+      isVerified: false,
+      showSeasonParticles: true,
+      unreadCount: 8,
+      transactions: [
+        {
+          id: 'TX-9041',
+          displayTitle: 'Sent to @k...',
+          fullTitle: 'Sent to @kemi',
+          recipient: '@kemi',
+          date: 'Nov 23, 2026',
+          amount: -2000.00,
+          status: 'Completed',
+          note: 'Giveaway payout'
+        },
+        {
+          id: 'TX-9038',
+          displayTitle: 'Sent to @...',
+          fullTitle: 'Sent to @alex',
+          recipient: '@alex',
+          date: 'Nov 22, 2026',
+          amount: -4000.00,
+          status: 'Completed',
+          note: 'Community distribution'
+        },
+        {
+          id: 'TX-9031',
+          displayTitle: 'Added mo...',
+          fullTitle: 'Added money',
+          recipient: '@crypto',
+          date: 'Nov 20, 2026',
+          amount: 5000.00,
+          status: 'Completed',
+          note: 'Instant card deposit'
+        }
+      ],
+      notifications: [
+        { id: 1, text: 'Sent $2,000.00 to @kemi', time: 'Nov 23, 2026', unread: true },
+        { id: 2, text: 'Sent $4,000.00 to @alex', time: 'Nov 22, 2026', unread: true },
+        { id: 3, text: 'Added $5,000.00 to your balance', time: 'Nov 20, 2026', unread: true },
+        { id: 4, text: 'Account verification pending admin review', time: 'Nov 19, 2026', unread: true },
+        { id: 5, text: 'PayTag @crypto is live and ready', time: 'Nov 18, 2026', unread: true },
+        { id: 6, text: 'New device login approved', time: 'Nov 17, 2026', unread: true },
+        { id: 7, text: 'Happy Thanksgiving from the team!', time: 'Nov 16, 2026', unread: true },
+        { id: 8, text: 'Welcome aboard!', time: 'Nov 15, 2026', unread: true }
+      ],
+      requests: [
+        { id: 'REQ-1', from: '@david', amount: 150.00, note: 'Dinner split', status: 'Pending' }
+      ],
+      scheduled: [
+        { id: 'SCH-1', to: '@kemi', amount: 250.00, cadence: 'Every Friday', nextDate: 'Nov 28, 2026' }
+      ]
+    };
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), JSON.parse(raw));
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        // Ignore storage quota issues in private mode
+      }
+    }
+
+    function formatUSD(val) {
+      const abs = Math.abs(val).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      return (val < 0 ? '-$' : '$') + abs;
+    }
+
+    function showToast(msg, warn = false) {
+      const el = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+      icon.textContent = warn ? '!' : '✓';
+      icon.style.color = warn ? '#FBBF24' : '#34D399';
+      text.textContent = msg;
+      el.classList.remove('hidden');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => el.classList.add('hidden'), 2700);
+    }
+
+    /* ========================================================================
+       SYNC ALL UI ELEMENTS FROM STATE
+       ======================================================================== */
+    function renderAll() {
+      // Auth vs Dashboard visibility
+      const authView = document.getElementById('auth-view');
+      const dashView = document.getElementById('dashboard-view');
+      if (appState.isAuthenticated) {
+        authView.classList.add('hidden');
+        dashView.classList.remove('hidden');
+      } else {
+        authView.classList.remove('hidden');
+        dashView.classList.add('hidden');
+      }
+
+      // Brand name (EarnPay <-> PayFlow)
+      const letter = (appState.brandName || 'EarnPay').charAt(0).toUpperCase();
+      document.querySelectorAll('.brand-letter').forEach(el => el.textContent = letter);
+      document.querySelectorAll('.brand-label').forEach(el => el.textContent = appState.brandName);
+      document.querySelectorAll('.brand-upper').forEach(el => el.textContent = appState.brandName.toUpperCase());
+      const altBrand = appState.brandName === 'EarnPay' ? 'PayFlow' : 'EarnPay';
+      const authAltEl = document.getElementById('auth-alt-brand');
+      if (authAltEl) authAltEl.textContent = altBrand;
+      document.title = `${appState.brandName} — Money moves. Life keeps flowing.`;
+
+      // Profile & PayTag
+      document.getElementById('dash-display-name').textContent = appState.displayName;
+      document.getElementById('dash-paytag').textContent = appState.payTag;
+      document.getElementById('drawer-paytag').textContent = appState.payTag;
+
+      // Balance & Eye Toggle
+      const balEl = document.getElementById('balance-display');
+      balEl.textContent = appState.hideBalance ? '••••••' : formatUSD(appState.balance);
+      document.getElementById('eye-show-svg').classList.toggle('hidden', appState.hideBalance);
+      document.getElementById('eye-hide-svg').classList.toggle('hidden', !appState.hideBalance);
+
+      // Verification Status
+      const alertBox = document.getElementById('verify-alert-box');
+      const verifyPill = document.getElementById('balance-verify-pill');
+      if (appState.isVerified) {
+        alertBox.classList.add('hidden');
+        verifyPill.textContent = 'Verified';
+        verifyPill.className = 'status-pill verified';
+      } else {
+        alertBox.classList.remove('hidden');
+        verifyPill.textContent = 'Not Verified';
+        verifyPill.className = 'status-pill unverified';
+      }
+
+      // Notification Badges
+      const hBadge = document.getElementById('header-notif-badge');
+      const dBadge = document.getElementById('drawer-notif-badge');
+      if (appState.unreadCount > 0) {
+        hBadge.textContent = appState.unreadCount;
+        dBadge.textContent = appState.unreadCount;
+        hBadge.classList.remove('hidden');
+        dBadge.classList.remove('hidden');
+      } else {
+        hBadge.classList.add('hidden');
+        dBadge.classList.add('hidden');
+      }
+
+      // Transactions List
+      renderTransactions();
+
+      // Seasonal Leaves
+      renderSeasonParticles();
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('tx-list-container');
+      container.innerHTML = '';
+      appState.transactions.forEach(tx => {
+        const isPos = tx.amount > 0;
+        const formatted = isPos ? '+' + formatUSD(tx.amount) : formatUSD(tx.amount);
+        const statusClass = (tx.status || 'Completed').toLowerCase() === 'pending' ? 'pending' : 'completed';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tx-row';
+        btn.onclick = () => openReceiptModal(tx);
+        btn.innerHTML = `
+          <div class="tx-info">
+            <div class="tx-title">${escapeHtml(tx.displayTitle || tx.fullTitle)}</div>
+            <div class="tx-date">${escapeHtml(tx.date)}</div>
+          </div>
+          <div class="tx-amount ${isPos ? 'positive' : ''}">${formatted}</div>
+          <span class="tx-status-pill ${statusClass}">${escapeHtml(tx.status || 'Completed')}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /* ========================================================================
+       AUTH FLOW HANDLERS
+       ======================================================================== */
+    function switchAuthTab(tab) {
+      const isSignIn = tab === 'signin';
+      document.getElementById('tab-signin').classList.toggle('active', isSignIn);
+      document.getElementById('tab-signup').classList.toggle('active', !isSignIn);
+      document.getElementById('signin-form').classList.toggle('hidden', !isSignIn);
+      document.getElementById('signup-form').classList.toggle('hidden', isSignIn);
+    }
+
+    function handleSignIn(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('login-identifier').value.trim();
+      if (idVal && idVal.startsWith('@')) {
+        appState.payTag = idVal;
+      }
+      appState.isAuthenticated = true;
+      saveState();
+      renderAll();
+      showToast(`Signed in as ${appState.payTag}`);
+    }
+
+    function quickDemoSignIn() {
+      appState.payTag = '@crypto';
+      appState.displayName = 'Crypto giveaway';
+      appState.isAuthenticated = true;
+      saveState();
+      renderAll();
+      showToast('Signed in to @crypto demo');
+    }
+
+    function handleSignUp(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      let tag = document.getElementById('reg-paytag').value.trim();
+      if (!tag.startsWith('@')) tag = '@' + tag;
+
+      appState.displayName = name || 'New Member';
+      appState.email = email;
+      appState.payTag = tag;
+      appState.isAuthenticated = true;
+      saveState();
+      renderAll();
+      showToast(`Account created for ${tag}`);
+    }
+
+    function handleSignOut() {
+      appState.isAuthenticated = false;
+      saveState();
+      renderAll();
+      showToast('Signed out');
+    }
+
+    /* ========================================================================
+       DASHBOARD INTERACTIONS
+       ======================================================================== */
+    function toggleBrandName() {
+      appState.brandName = appState.brandName === 'EarnPay' ? 'PayFlow' : 'EarnPay';
+      saveState();
+      renderAll();
+      showToast(`Switched brand to ${appState.brandName}`);
+    }
+
+    function toggleMaskBalance() {
+      appState.hideBalance = !appState.hideBalance;
+      saveState();
+      renderAll();
+    }
+
+    function refreshBalanceSpin() {
+      const svg = document.getElementById('refresh-svg');
+      svg.classList.remove('spin-once');
+      void svg.offsetWidth;
+      svg.classList.add('spin-once');
+      showToast('Balance up to date');
+    }
+
+    function copyPayTag() {
+      const tag = appState.payTag;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(tag).catch(() => fallbackCopyText(tag));
+      } else {
+        fallbackCopyText(tag);
+      }
+      showToast(`Copied ${tag}`);
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    function dismissElement(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    /* Secret 3-tap on Logo opens Admin Panel */
+    let logoTapCount = 0;
+    let logoTapTimer = null;
+    function handleLogoSecretTap() {
+      logoTapCount++;
+      clearTimeout(logoTapTimer);
+      if (logoTapCount >= 3) {
+        logoTapCount = 0;
+        openAdminPanel();
+      } else {
+        logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 700);
+      }
+    }
+
+    /* Drawer Controls */
+    function openDrawer() {
+      document.getElementById('drawer-backdrop').classList.remove('hidden');
+      document.getElementById('side-drawer').classList.add('open');
+    }
+
+    function closeDrawer() {
+      document.getElementById('side-drawer').classList.remove('open');
+      document.getElementById('drawer-backdrop').classList.add('hidden');
+    }
+
+    /* Modal System */
+    function openModal(title, html) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-content').innerHTML = html;
+      document.getElementById('modal-wrap').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-wrap').classList.add('hidden');
+    }
+
+    /* ========================================================================
+       QUICK ACTION MODALS (SEND, ADD, RECEIVE, WITHDRAW, MARKETS, REQUESTS, SCHEDULED)
+       ======================================================================== */
+    function openActionModal(type) {
+      if (type === 'send') {
+        openModal('Send money', `
+          <form onsubmit="submitSendMoney(event)">
+            <div class="form-group">
+              <label class="form-label">Recipient @PayTag</label>
+              <input id="inp-send-tag" class="form-input" type="text" required value="@kemi" placeholder="@username" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (USD)</label>
+              <input id="inp-send-amt" class="form-input" type="number" step="0.01" min="1" required placeholder="250.00" />
+              <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">
+                Available balance: <strong>${formatUSD(appState.balance)}</strong>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Note</label>
+              <input id="inp-send-note" class="form-input" type="text" placeholder="What's this for?" />
+            </div>
+            <button type="submit" class="btn-primary">Send Instant Payment</button>
+          </form>
+        `);
+      } else if (type === 'add') {
+        openModal('Add money', `
+          <form onsubmit="submitAddMoney(event)">
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;">
+              <button type="button" class="nav-pill" style="text-align:center;" onclick="document.getElementById('inp-add-amt').value=100">+$100</button>
+              <button type="button" class="nav-pill" style="text-align:center;" onclick="document.getElementById('inp-add-amt').value=500">+$500</button>
+              <button type="button" class="nav-pill" style="text-align:center;" onclick="document.getElementById('inp-add-amt').value=1000">+$1,000</button>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount to Add (USD)</label>
+              <input id="inp-add-amt" class="form-input" type="number" step="0.01" min="1" required placeholder="500.00" />
+            </div>
+            <div style="padding:11px 13px; border-radius:12px; background:var(--bg-cream); border:1px solid var(--border-warm); font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">
+              Funding method: <strong style="color:var(--text-espresso);">Instant Debit •••• 4829</strong> ($0.00 fee)
+            </div>
+            <button type="submit" class="btn-primary">Add Money Now</button>
+          </form>
+        `);
+      } else if (type === 'receive') {
+        openModal('Receive money', `
+          <div style="text-align:center;">
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px;">
+              Share your @PayTag or QR code to get paid instantly without account numbers.
+            </p>
+            <div style="width:164px; height:164px; margin:0 auto 14px; padding:14px; border-radius:20px; background:var(--bg-cream); border:1px solid var(--border-warm);">
+              <svg viewBox="0 0 100 100" width="100%" height="100%" fill="#23170F">
+                <rect x="8" y="8" width="26" height="26" rx="4" fill="none" stroke="#23170F" stroke-width="6"/>
+                <rect x="15" y="15" width="12" height="12" rx="2"/>
+                <rect x="66" y="8" width="26" height="26" rx="4" fill="none" stroke="#23170F" stroke-width="6"/>
+                <rect x="73" y="15" width="12" height="12" rx="2"/>
+                <rect x="8" y="66" width="26" height="26" rx="4" fill="none" stroke="#23170F" stroke-width="6"/>
+                <rect x="15" y="73" width="12" height="12" rx="2"/>
+                <rect x="44" y="12" width="12" height="12" rx="2"/>
+                <rect x="44" y="32" width="12" height="24" rx="2" fill="#9E470E"/>
+                <rect x="12" y="44" width="24" height="12" rx="2"/>
+                <rect x="64" y="44" width="26" height="12" rx="2"/>
+                <rect x="44" y="64" width="12" height="26" rx="2"/>
+                <rect x="66" y="66" width="12" height="12" rx="2"/>
+                <rect x="80" y="80" width="12" height="12" rx="2" fill="#5B21B6"/>
+              </svg>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:16px; background:var(--bg-cream); border:1px solid var(--border-warm);">
+              <div style="text-align:left;">
+                <div style="font-size:11px; font-weight:700; color:var(--text-subtle); text-transform:uppercase;">Your PayTag</div>
+                <div style="font-size:16px; font-weight:800;">${escapeHtml(appState.payTag)}</div>
+              </div>
+              <button type="button" class="signout-pill" style="background:var(--text-espresso); color:#fff;" onclick="copyPayTag()">Copy Tag</button>
+            </div>
+          </div>
+        `);
+      } else if (type === 'withdraw') {
+        openModal('Withdraw funds', `
+          <form onsubmit="submitWithdraw(event)">
+            ${!appState.isVerified ? `
+              <div style="padding:11px 13px; border-radius:12px; background:var(--amber-bg); border:1px solid var(--amber-border); font-size:12.5px; color:var(--amber-text); margin-bottom:14px;">
+                <strong>Heads up:</strong> Account is currently <em>Not Verified</em>. You can still test withdrawals or verify your account in the Admin Panel.
+              </div>
+            ` : ''}
+            <div class="form-group">
+              <label class="form-label">Payout Destination</label>
+              <select id="inp-wd-dest" class="form-input">
+                <option>Bank Account •••• 8841 (ACH)</option>
+                <option>External USDC Wallet (0x91...4F2)</option>
+                <option>Instant Visa Direct •••• 4829</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Withdraw Amount (USD)</label>
+              <input id="inp-wd-amt" class="form-input" type="number" step="0.01" min="5" required placeholder="100.00" />
+              <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">
+                Available balance: <strong>${formatUSD(appState.balance)}</strong>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary">Confirm Withdrawal</button>
+          </form>
+        `);
+      } else if (type === 'markets') {
+        const assets = [
+          { name: 'Bitcoin', sym: 'BTC', price: '$96,420.00', delta: '+3.42%', up: true },
+          { name: 'Ethereum', sym: 'ETH', price: '$3,418.50', delta: '+1.85%', up: true },
+          { name: 'Solana', sym: 'SOL', price: '$238.90', delta: '+5.12%', up: true },
+          { name: 'USD Coin', sym: 'USDC', price: '$1.00', delta: '0.00%', up: true },
+          { name: 'EUR / USD', sym: 'FX', price: '$1.084', delta: '-0.18%', up: false }
+        ];
+        openModal('Markets', `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${assets.map(a => `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:16px; background:var(--bg-cream); border:1px solid var(--border-warm);">
+                <div>
+                  <div style="font-size:14.5px; font-weight:700;">${a.name} <span style="font-size:12px; color:var(--text-subtle);">(${a.sym})</span></div>
+                  <div style="font-size:12px; color:var(--text-muted);">Live spot rate</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:14.5px; font-weight:700;">${a.price}</div>
+                  <div style="font-size:12px; font-weight:700; color:${a.up ? 'var(--green-text)' : '#DC2626'};">${a.delta}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `);
+      } else if (type === 'requests') {
+        openModal('Payment Requests', `
+          <form onsubmit="submitNewRequest(event)" style="padding:14px; border-radius:16px; background:var(--bg-cream); border:1px solid var(--border-warm); margin-bottom:14px;">
+            <div class="form-label">Request from @PayTag</div>
+            <div class="grid-2" style="margin-bottom:10px;">
+              <input id="inp-req-tag" class="form-input" style="background:#fff;" type="text" required placeholder="@username" />
+              <input id="inp-req-amt" class="form-input" style="background:#fff;" type="number" step="0.01" min="1" required placeholder="$50.00" />
+            </div>
+            <button type="submit" class="btn-primary" style="padding:10px;">Send Request</button>
+          </form>
+          <div class="form-label">Recent Requests</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${appState.requests.map(r => `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 13px; border-radius:14px; border:1px solid var(--border-warm);">
+                <div>
+                  <div style="font-size:14px; font-weight:700;">From ${escapeHtml(r.from)}</div>
+                  <div style="font-size:12px; color:var(--text-muted);">${escapeHtml(r.note)} • ${escapeHtml(r.status)}</div>
+                </div>
+                <div style="font-size:14px; font-weight:800; color:var(--brand-orange);">${formatUSD(r.amount)}</div>
+              </div>
+            `).join('')}
+          </div>
+        `);
+      } else if (type === 'scheduled') {
+        openModal('Scheduled Transfers', `
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+            ${appState.scheduled.map(s => `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 14px; border-radius:16px; background:var(--bg-cream); border:1px solid var(--border-warm);">
+                <div>
+                  <div style="font-size:14.5px; font-weight:700;">To ${escapeHtml(s.to)}</div>
+                  <div style="font-size:12px; color:var(--text-muted);">${escapeHtml(s.cadence)} • Next: ${escapeHtml(s.nextDate)}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:14.5px; font-weight:800;">${formatUSD(s.amount)}</div>
+                  <span style="font-size:11px; font-weight:700; color:var(--green-text);">Active</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" class="btn-secondary" onclick="closeModal(); openActionModal('send')">+ Send One-Time Payment</button>
+        `);
+      }
+    }
+
+    function submitSendMoney(e) {
+      e.preventDefault();
+      let tag = document.getElementById('inp-send-tag').value.trim();
+      if (!tag.startsWith('@')) tag = '@' + tag;
+      const amt = parseFloat(document.getElementById('inp-send-amt').value);
+      const note = document.getElementById('inp-send-note').value.trim() || 'Instant @PayTag transfer';
+
+      if (isNaN(amt) || amt <= 0) return;
+      if (amt > appState.balance) {
+        showToast('Insufficient balance', true);
+        return;
+      }
+
+      appState.balance -= amt;
+      const shortTitle = `Sent to ${tag.length > 5 ? tag.slice(0, 4) + '...' : tag}`;
+      appState.transactions.unshift({
+        id: 'TX-' + Math.floor(1000 + Math.random() * 9000),
+        displayTitle: shortTitle,
+        fullTitle: `Sent to ${tag}`,
+        recipient: tag,
+        date: 'Nov 26, 2026',
+        amount: -amt,
+        status: 'Completed',
+        note
+      });
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast(`Sent ${formatUSD(amt)} to ${tag}`);
+    }
+
+    function submitAddMoney(e) {
+      e.preventDefault();
+      const amt = parseFloat(document.getElementById('inp-add-amt').value);
+      if (isNaN(amt) || amt <= 0) return;
+
+      appState.balance += amt;
+      appState.transactions.unshift({
+        id: 'TX-' + Math.floor(1000 + Math.random() * 9000),
+        displayTitle: 'Added mo...',
+        fullTitle: 'Added money',
+        recipient: appState.payTag,
+        date: 'Nov 26, 2026',
+        amount: amt,
+        status: 'Completed',
+        note: 'Instant card deposit'
+      });
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast(`Added ${formatUSD(amt)} to balance`);
+    }
+
+    function submitWithdraw(e) {
+      e.preventDefault();
+      const amt = parseFloat(document.getElementById('inp-wd-amt').value);
+      const dest = document.getElementById('inp-wd-dest').value;
+      if (isNaN(amt) || amt <= 0) return;
+      if (amt > appState.balance) {
+        showToast('Amount exceeds balance', true);
+        return;
+      }
+
+      appState.balance -= amt;
+      appState.transactions.unshift({
+        id: 'TX-' + Math.floor(1000 + Math.random() * 9000),
+        displayTitle: 'Withdrew...',
+        fullTitle: 'Withdrew funds',
+        recipient: dest,
+        date: 'Nov 26, 2026',
+        amount: -amt,
+        status: 'Completed',
+        note: dest
+      });
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast(`Withdrew ${formatUSD(amt)}`);
+    }
+
+    function submitNewRequest(e) {
+      e.preventDefault();
+      let tag = document.getElementById('inp-req-tag').value.trim();
+      if (!tag.startsWith('@')) tag = '@' + tag;
+      const amt = parseFloat(document.getElementById('inp-req-amt').value);
+      if (!amt || amt <= 0) return;
+
+      appState.requests.unshift({
+        id: 'REQ-' + Date.now(),
+        from: tag,
+        amount: amt,
+        note: 'PayTag request',
+        status: 'Sent'
+      });
+      saveState();
+      closeModal();
+      showToast(`Requested ${formatUSD(amt)} from ${tag}`);
+    }
+
+    /* ========================================================================
+       RECEIPT, NOTIFICATIONS, SUPPORT & SETTINGS MODALS
+       ======================================================================== */
+    function openReceiptModal(tx) {
+      const isPos = tx.amount > 0;
+      openModal('Transaction Receipt', `
+        <div style="text-align:center; padding:18px; border-radius:18px; background:var(--bg-cream); border:1px solid var(--border-warm); margin-bottom:16px;">
+          <span class="tx-status-pill ${(tx.status||'Completed').toLowerCase() === 'pending' ? 'pending' : 'completed'}">${escapeHtml(tx.status || 'Completed')}</span>
+          <div style="font-size:30px; font-weight:800; margin-top:10px; color:${isPos ? 'var(--green-text)' : 'var(--text-espresso)'};">
+            ${isPos ? '+' + formatUSD(tx.amount) : formatUSD(tx.amount)}
+          </div>
+          <div style="font-size:14.5px; font-weight:700; color:var(--text-brown); margin-top:4px;">${escapeHtml(tx.fullTitle || tx.displayTitle)}</div>
+        </div>
+        <div style="font-size:13.5px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #F3EDE4; padding-bottom:8px;">
+            <span style="color:var(--text-subtle);">Date</span>
+            <strong>${escapeHtml(tx.date)}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #F3EDE4; padding-bottom:8px;">
+            <span style="color:var(--text-subtle);">PayTag / Destination</span>
+            <strong>${escapeHtml(tx.recipient || appState.payTag)}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #F3EDE4; padding-bottom:8px;">
+            <span style="color:var(--text-subtle);">Reference ID</span>
+            <span style="font-family:monospace; font-weight:700;">${escapeHtml(tx.id)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-subtle);">Note</span>
+            <span>${escapeHtml(tx.note || '—')}</span>
+          </div>
+        </div>
+      `);
+    }
+
+    function openNotificationsModal() {
+      openModal(`Notifications (${appState.unreadCount})`, `
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <button type="button" class="inline-link" style="font-size:12.5px;" onclick="markNotificationsRead()">Mark all as read</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${appState.notifications.map(n => `
+            <div style="padding:11px 13px; border-radius:14px; background:${n.unread ? 'rgba(254, 243, 199, 0.45)' : 'var(--bg-cream)'}; border:1px solid var(--border-warm);">
+              <div style="font-size:13.5px; font-weight:600;">${escapeHtml(n.text)}</div>
+              <div style="font-size:11.5px; color:var(--text-subtle); margin-top:2px;">${escapeHtml(n.time)}</div>
+            </div>
+          `).join('')}
+        </div>
+      `);
+    }
+
+    function markNotificationsRead() {
+      appState.unreadCount = 0;
+      appState.notifications.forEach(n => n.unread = false);
+      saveState();
+      renderAll();
+      closeModal();
+      showToast('All notifications marked read');
+    }
+
+    function openSupportModal() {
+      openModal('Contact Admin Support', `
+        <form onsubmit="submitSupportTicket(event)">
+          <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:12px;">
+            Request verification or message support regarding <strong>${escapeHtml(appState.payTag)}</strong>.
+          </p>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input class="form-input" type="text" required value="Verify Account (${escapeHtml(appState.payTag)})" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-input" rows="3" required>Hello Admin, please verify my account ${escapeHtml(appState.payTag)} so it is fully activated.</textarea>
+          </div>
+          <button type="submit" class="btn-primary">Submit Request</button>
+        </form>
+      `);
+    }
+
+    function submitSupportTicket(e) {
+      e.preventDefault();
+      closeModal();
+      showToast('Verification request sent to support');
+    }
+
+    function openSettingsModal() {
+      openModal('Settings & Preferences', `
+        <form onsubmit="saveUserSettings(event)">
+          <div class="form-group">
+            <label class="form-label">Brand Switcher</label>
+            <div class="grid-2">
+              <button type="button" class="nav-pill" style="text-align:center;" onclick="document.getElementById('set-brand').value='EarnPay'">EarnPay</button>
+              <button type="button" class="nav-pill" style="text-align:center;" onclick="document.getElementById('set-brand').value='PayFlow'">PayFlow</button>
+            </div>
+            <input id="set-brand" class="form-input" style="margin-top:8px;" type="text" value="${escapeHtml(appState.brandName)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Display Name</label>
+            <input id="set-name" class="form-input" type="text" value="${escapeHtml(appState.displayName)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your @PayTag</label>
+            <input id="set-tag" class="form-input" type="text" value="${escapeHtml(appState.payTag)}" />
+          </div>
+          <label style="display:flex; align-items:center; justify-content:space-between; padding:12px; border-radius:14px; background:var(--bg-cream); border:1px solid var(--border-warm); margin-bottom:14px; cursor:pointer;">
+            <span style="font-size:13.5px; font-weight:700;">Decorative Autumn Leaves</span>
+            <input id="set-leaves" type="checkbox" ${appState.showSeasonParticles ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--brand-orange);" />
+          </label>
+          <button type="submit" class="btn-primary">Save Settings</button>
+        </form>
+      `);
+    }
+
+    function saveUserSettings(e) {
+      e.preventDefault();
+      appState.brandName = document.getElementById('set-brand').value.trim() || 'EarnPay';
+      appState.displayName = document.getElementById('set-name').value.trim() || 'Crypto giveaway';
+      let tag = document.getElementById('set-tag').value.trim() || '@crypto';
+      if (!tag.startsWith('@')) tag = '@' + tag;
+      appState.payTag = tag;
+      appState.showSeasonParticles = document.getElementById('set-leaves').checked;
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast('Settings saved');
+    }
+
+    function openStaticModal(title, body) {
+      openModal(title, `<p style="font-size:14px; color:var(--text-brown); line-height:1.55;">${escapeHtml(body)}</p>`);
+    }
+
+    /* ========================================================================
+       BUILT-IN ADMIN PANEL (?ref=admin, Drawer Button, or 3-Tap Logo)
+       ======================================================================== */
+    function openAdminPanel() {
+      openModal('🛡️ Admin Control Panel', `
+        <!-- 1. Balance & Profile Editor -->
+        <form onsubmit="applyAdminAccountChanges(event)" class="admin-box">
+          <div class="admin-box-title">1. Balance, Verification &amp; Identity</div>
+
+          <div class="form-group">
+            <label class="form-label">Total Balance (USD)</label>
+            <input id="adm-balance" class="form-input" style="background:#fff; font-weight:800; font-size:16px;" type="number" step="0.01" required value="${appState.balance.toFixed(2)}" />
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">@PayTag</label>
+              <input id="adm-paytag" class="form-input" style="background:#fff;" type="text" required value="${escapeHtml(appState.payTag)}" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Display Name</label>
+              <input id="adm-name" class="form-input" style="background:#fff;" type="text" required value="${escapeHtml(appState.displayName)}" />
+            </div>
+          </div>
+
+          <label style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; background:#fff; border:1px solid var(--border-warm); margin-bottom:12px; cursor:pointer;">
+            <div>
+              <div style="font-size:13.5px; font-weight:700;">Account Verified Status</div>
+              <div style="font-size:11.5px; color:var(--text-muted);">Switch between Not Verified &amp; Verified</div>
+            </div>
+            <input id="adm-verified" type="checkbox" ${appState.isVerified ? 'checked' : ''} style="width:19px; height:19px; accent-color:#15803D;" />
+          </label>
+
+          <button type="submit" class="btn-primary" style="padding:11px;">Update Account &amp; Balance</button>
+        </form>
+
+        <!-- 2. Custom Transaction Injector -->
+        <form onsubmit="injectAdminTransaction(event)" class="admin-box">
+          <div class="admin-box-title">2. Inject Custom Transaction</div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Direction</label>
+              <select id="adm-tx-dir" class="form-input" style="background:#fff;">
+                <option value="out">Outgoing (-$ Sent)</option>
+                <option value="in">Incoming (+$ Added/Received)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="adm-tx-status" class="form-input" style="background:#fff;">
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Recipient / Label</label>
+              <input id="adm-tx-label" class="form-input" style="background:#fff;" type="text" required placeholder="Sent to @kemi" value="Sent to @kemi" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (USD)</label>
+              <input id="adm-tx-amt" class="form-input" style="background:#fff;" type="number" step="0.01" min="0.01" required placeholder="500.00" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Date String</label>
+            <input id="adm-tx-date" class="form-input" style="background:#fff;" type="text" required value="Nov 26, 2026" />
+          </div>
+
+          <button type="submit" class="btn-secondary" style="background:#fff; margin-top:0;">+ Add Transaction to Feed</button>
+        </form>
+
+        <!-- 3. Reset Demo Defaults -->
+        <button type="button" class="btn-secondary" style="color:#B91C1C; border-color:#FECACA; background:#FEF2F2;" onclick="resetAllDemoData()">
+          Reset All Demo Data to Defaults
+        </button>
+      `);
+    }
+
+    function applyAdminAccountChanges(e) {
+      e.preventDefault();
+      const newBal = parseFloat(document.getElementById('adm-balance').value);
+      let newTag = document.getElementById('adm-paytag').value.trim();
+      if (newTag && !newTag.startsWith('@')) newTag = '@' + newTag;
+      const newName = document.getElementById('adm-name').value.trim();
+      const verified = document.getElementById('adm-verified').checked;
+
+      if (!isNaN(newBal)) appState.balance = newBal;
+      if (newTag) appState.payTag = newTag;
+      if (newName) appState.displayName = newName;
+      appState.isVerified = verified;
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast('Admin changes saved');
+    }
+
+    function injectAdminTransaction(e) {
+      e.preventDefault();
+      const dir = document.getElementById('adm-tx-dir').value;
+      const status = document.getElementById('adm-tx-status').value;
+      const label = document.getElementById('adm-tx-label').value.trim();
+      const rawAmt = parseFloat(document.getElementById('adm-tx-amt').value);
+      const dateStr = document.getElementById('adm-tx-date').value.trim() || 'Nov 26, 2026';
+
+      if (isNaN(rawAmt) || rawAmt <= 0 || !label) return;
+
+      const signedAmt = dir === 'out' ? -Math.abs(rawAmt) : Math.abs(rawAmt);
+      const shortTitle = label.length > 12 ? label.slice(0, 10) + '...' : label;
+
+      appState.transactions.unshift({
+        id: 'TX-' + Math.floor(1000 + Math.random() * 9000),
+        displayTitle: shortTitle,
+        fullTitle: label,
+        recipient: label.includes('@') ? '@' + label.split('@')[1].split(' ')[0] : appState.payTag,
+        date: dateStr,
+        amount: signedAmt,
+        status,
+        note: 'Admin ledger entry'
+      });
+
+      saveState();
+      renderAll();
+      closeModal();
+      showToast('Custom transaction added');
+    }
+
+    function resetAllDemoData() {
+      localStorage.removeItem(STORAGE_KEY);
+      appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveState();
+      renderAll();
+      closeModal();
+      showToast('Demo data restored to defaults');
+    }
+
+    /* ========================================================================
+       SEASONAL DECORATIVE AUTUMN LEAVES & PUMPKINS
+       ======================================================================== */
+    function renderSeasonParticles() {
+      const layer = document.getElementById('leaves-layer');
+      layer.innerHTML = '';
+      if (!appState.showSeasonParticles) return;
+
+      const icons = ['🍂', '🍁', '🎃', '🍃'];
+      for (let i = 0; i < 10; i++) {
+        const el = document.createElement('span');
+        el.className = 'season-particle';
+        el.textContent = icons[i % icons.length];
+        el.style.left = `${(i * 10 + 4) % 95}vw`;
+        el.style.fontSize = i % 4 === 2 ? '13px' : '15px';
+        el.style.animationDuration = `${11 + (i % 4) * 2.4}s`;
+        el.style.animationDelay = `${-(i * 1.7)}s`;
+        layer.appendChild(el);
+      }
+    }
+
+    /* ========================================================================
+       INITIALIZE APP & CHECK ?ref=admin
+       ======================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('ref') === 'admin') {
+        appState.isAuthenticated = true;
+        saveState();
+        renderAll();
+        openAdminPanel();
+      }
+    });
+  </script>
+</body>
+</html>
